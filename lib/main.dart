@@ -86,6 +86,7 @@ class _HomeState extends State<Home> {
               },
             ),
           );
+          Scaffold.of(context).removeCurrentSnackBar();
           Scaffold.of(context).showSnackBar(snackBar);
         });
       },
@@ -100,6 +101,18 @@ class _HomeState extends State<Home> {
       _todoList.add(newTodo);
       _saveData();
       _todoTextFieldController.text = '';
+    });
+  }
+
+  Future<Null> _refreshTodo() async {
+    await Future.delayed(Duration(seconds: 1));
+    setState(() {
+      _todoList.sort((a, b){
+        if(a['ok'] && b['ok']) return 0;
+        else if(a['ok'] && !b['ok']) return 1;
+        else return -1;
+      });
+      _saveData();
     });
   }
 
@@ -146,13 +159,18 @@ class _HomeState extends State<Home> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.only(top: 10.0),
-              itemCount: _todoList.length,
-              itemBuilder: _buildListItem),
+            child: RefreshIndicator(
+              onRefresh: _refreshTodo,
+              child: ListView.builder(
+                  padding: EdgeInsets.only(top: 10.0),
+                  itemCount: _todoList.length,
+                  itemBuilder: _buildListItem
+              ),
+            )
           )
         ],
       ),
     );
   }
 }
+
